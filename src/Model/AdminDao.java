@@ -69,5 +69,19 @@ public class AdminDao {
             return false;
         }
     }
+    public boolean login(String username, String password){
+        try {
+            ps = con.prepareStatement("select * from admin where username = ? and password = ?");
+            ps.setString(1, username);
+            ps.setString(2, password);
+            rs = ps.executeQuery();
+            if(rs.next()){
+                return true;
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(AdminDao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
     
 }
