@@ -194,15 +194,14 @@ public class ThemSanPhamFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jPanel1MouseDragged
 
     private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-        // TODO add your handling code here:
-        for(double i = 0.1; i<=1.0;i+=0.1){
+      for(double i = 0.1; i<=1.0;i+=0.1){
                 String s = "" + i;
                 float f = Float.parseFloat(s);
                 this.setOpacity(f);
             try {
                 Thread.sleep(40);
             } catch (InterruptedException ex) {
-                Logger.getLogger(SingUp.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ThemSanPhamFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }//GEN-LAST:event_formWindowOpened

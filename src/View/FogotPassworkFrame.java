@@ -341,7 +341,7 @@ public class FogotPassworkFrame extends javax.swing.JFrame {
             try {
                 Thread.sleep(40);
             } catch (InterruptedException ex) {
-                Logger.getLogger(SingUp.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(FogotPassworkFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }//GEN-LAST:event_formWindowOpened
