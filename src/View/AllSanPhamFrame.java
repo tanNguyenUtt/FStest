@@ -5,9 +5,11 @@
 package View;
 
 import Model.Dao;
+import Model.Product;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Image;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
@@ -25,24 +27,42 @@ public class AllSanPhamFrame extends javax.swing.JFrame {
     int xx, xy;
     Dao dao = new Dao();
     DefaultTableModel model;
+    private ArrayList<Product> list;
     
     public AllSanPhamFrame() {
         initComponents();
+          Dao dao = new Dao();
+        list = new Dao().getAllProduct();
+        model = (DefaultTableModel) jTable1.getModel();
+        model.setColumnIdentifiers( new Object[]{
+        "ID","Name","Price","Image"
+    });
+       showTable();
+
     }
     
-    public void tableProduct(){
-       dao.getallProduct(jTable1);
-       model = (DefaultTableModel)  jTable1.getModel();
-       jTable1.setRowHeight(100);
-       jTable1.setShowGrid(true);
-       jTable1.setGridColor(Color.BLACK);
-       jTable1.setBackground(Color.WHITE);
-       jTable1.setSelectionBackground(Color.GRAY);
-       jTable1.setModel(model);
-       jTable1.getTableHeader().setReorderingAllowed(false);
-       jTable1.getColumnModel().getColumn(3).setCellRenderer(new AllSanPhamFrame.ImageRenderer());
-       
-    }
+        private void showTable() {
+        for(Product p : list){
+            model.addRow(new Object[]{
+               p.getId(), p.getName(), p.getPrice(), p.getImage()
+                    
+            });
+        }
+        }
+    
+//    public void tableProduct(){
+//       dao.getallProduct(jTable1);
+//       model = (DefaultTableModel)  jTable1.getModel();
+//       jTable1.setRowHeight(100);
+//       jTable1.setShowGrid(true);
+//       jTable1.setGridColor(Color.BLACK);
+//       jTable1.setBackground(Color.WHITE);
+//       jTable1.setSelectionBackground(Color.GRAY);
+//       jTable1.setModel(model);
+//       jTable1.getTableHeader().setReorderingAllowed(false);
+//       jTable1.getColumnModel().getColumn(3).setCellRenderer(new AllSanPhamFrame.ImageRenderer());
+//       
+//    }
       
 
     /**
@@ -164,6 +184,8 @@ public class AllSanPhamFrame extends javax.swing.JFrame {
         int y = evt.getYOnScreen();
         this.setLocation(x -xx,y -xy);
     }//GEN-LAST:event_jPanel1MouseDragged
+
+
 
     private class ImageRenderer extends DefaultTableCellRenderer{
 
