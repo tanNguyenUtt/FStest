@@ -224,7 +224,7 @@ public class ThemSanPhamFrame extends javax.swing.JFrame {
             product.setPrice(Double.parseDouble(jTextField2.getText().trim()));
             product.setImage(Files.readAllBytes(this.file.toPath()));
             
-            if(dao.insertProduct(product)){
+            if(dao.insertProduct1(product) > 0){
                 JOptionPane.showMessageDialog(null, "Product added successfully..");
                 clear();
             }else{
