@@ -4,6 +4,20 @@
  */
 package View;
 
+import Model.Cart;
+import Model.Dao;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Image;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+
 /**
  *
  * @author Duong Minh Dat
@@ -13,8 +27,42 @@ public class OderFrame extends javax.swing.JFrame {
     /**
      * Creates new form OderFrame
      */
+    int xx, xy, rowIndex;
+    Dao dao = new Dao();
+    DefaultTableModel model;
+    private double price = 0.0, total = 0.0;
+
     public OderFrame() {
         initComponents();
+        jTextField1.setText(String.valueOf(dao.getMaxRowAOrderTable()));
+        tableProduct();
+    }
+
+    public void tableProduct() {
+        dao.getallProduct(jTable1);
+        model = (DefaultTableModel) jTable1.getModel();
+        jTable1.setRowHeight(100);
+        jTable1.setShowGrid(true);
+        jTable1.setGridColor(Color.BLACK);
+        jTable1.setBackground(Color.WHITE);
+        jTable1.setSelectionBackground(Color.GRAY);
+        jTable1.setModel(model);
+        jTable1.getTableHeader().setReorderingAllowed(false);
+        jTable1.getColumnModel().getColumn(3).setCellRenderer(new OderFrame.ImageRenderer());
+
+    }
+
+    private class ImageRenderer extends DefaultTableCellRenderer {
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            JLabel jL = new JLabel();
+            byte[] bytes = (byte[]) value;
+            ImageIcon imageicon = new ImageIcon(new ImageIcon(bytes).getImage().getScaledInstance(100, 100, Image.SCALE_DEFAULT));
+            jL.setIcon(imageicon);
+            return jL;
+        }
+
     }
 
     /**
@@ -42,8 +90,23 @@ public class OderFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setUndecorated(true);
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
         jPanel1.setBackground(new java.awt.Color(255, 153, 153));
+        jPanel1.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
+            public void mouseDragged(java.awt.event.MouseEvent evt) {
+                jPanel1MouseDragged(evt);
+            }
+        });
+        jPanel1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                jPanel1MousePressed(evt);
+            }
+        });
 
         jLabel4.setFont(new java.awt.Font("Segoe UI", 1, 36)); // NOI18N
         jLabel4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -62,6 +125,11 @@ public class OderFrame extends javax.swing.JFrame {
                 "ID Sản Phẩm", "Name", "Price", "Image"
             }
         ));
+        jTable1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jTable1MouseClicked(evt);
+            }
+        });
         jScrollPane1.setViewportView(jTable1);
 
         jLabel1.setFont(new java.awt.Font("Times New Roman", 1, 36)); // NOI18N
@@ -104,6 +172,11 @@ public class OderFrame extends javax.swing.JFrame {
         jButton4.setBackground(new java.awt.Color(255, 204, 204));
         jButton4.setFont(new java.awt.Font("Times New Roman", 1, 18)); // NOI18N
         jButton4.setText("Cart");
+        jButton4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton4ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -188,7 +261,95 @@ public class OderFrame extends javax.swing.JFrame {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
+        if (jTextField2.getText().isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Vui lòng chọn một sản phẩm", "Warning", 2);
+        } else if (jTextField3.getText().isEmpty() || jTextField3.getText().equals("0")) {
+            JOptionPane.showMessageDialog(this, "Số lượng sản phẩm là bắt buộc", "Warning", 2);
+        } else {
+
+            try {
+                model = (DefaultTableModel) jTable1.getModel();
+                int cid = Integer.parseInt(jTextField1.getText().trim());
+                int qty = Integer.parseInt(jTextField3.getText().trim());
+                int proId = Integer.parseInt(model.getValueAt(rowIndex, 0).toString());
+                String pName = jTextField2.getText().trim();
+
+                price = Double.parseDouble(model.getValueAt(rowIndex, 2).toString());
+
+                if (!dao.isProductExist(cid, proId)) {
+                    Cart cart = new Cart();
+                    cart.setId(cid);
+                    cart.setPid(proId);
+                    cart.setpName(pName);
+                    cart.setQty(qty);
+                    cart.setPrice(price);
+                    cart.setTotal(price * (double) qty);
+                    total += price * (double) qty;
+
+                    jLabel1.setText(String.format("Total ($): " + "%.2f", total));
+                    if (dao.insertCart(cart)) {
+                        JOptionPane.showMessageDialog(this, "Đã thêm sản phẩm");
+                        clear();
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this, "Sản phẩm này đã tồn tại", "Warning", 2);
+                }
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(this, "" + e, "Warning", 2);
+            }
+        }
     }//GEN-LAST:event_jButton3ActionPerformed
+
+    private void jPanel1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MousePressed
+        // TODO add your handling code here:
+        xx = evt.getX();
+        xy = evt.getY();
+
+    }//GEN-LAST:event_jPanel1MousePressed
+
+    private void jPanel1MouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jPanel1MouseDragged
+        // TODO add your handling code here:
+        int x = evt.getXOnScreen();
+        int y = evt.getYOnScreen();
+        this.setLocation(x - xx, y - xy);
+    }//GEN-LAST:event_jPanel1MouseDragged
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        // TODO add your handling code here:
+        for (double i = 0.1; i <= 1.0; i += 0.1) {
+            String s = "" + i;
+            float f = Float.parseFloat(s);
+            this.setOpacity(f);
+            try {
+                Thread.sleep(40);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(OderFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+    }//GEN-LAST:event_formWindowOpened
+
+    private void jTable1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jTable1MouseClicked
+        // TODO add your handling code here:
+        model = (DefaultTableModel) jTable1.getModel();
+        rowIndex = jTable1.getSelectedRow();
+        jTextField2.setText(model.getValueAt(rowIndex, 1).toString());
+    }//GEN-LAST:event_jTable1MouseClicked
+
+    private void jButton4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton4ActionPerformed
+        // TODO add your handling code here:
+        if(total !=0.0){
+             new CartFamer().setVisible(true);
+             setVisible(false);
+        }else{
+            JOptionPane.showMessageDialog(this, "Bạn chưa mua sản phẩm nào","Warning",2);
+        }
+    }//GEN-LAST:event_jButton4ActionPerformed
+
+    private void clear() {
+        jTextField2.setText(null);
+        jTextField3.setText("0");
+        jTable1.clearSelection();
+    }
 
     /**
      * @param args the command line arguments

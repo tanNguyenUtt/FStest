@@ -179,15 +179,64 @@ public class Dao {
             }
         }
     }
-    
-    public boolean delete(Product product){
+
+    public boolean delete(Product product) {
         try {
             ps = con.prepareStatement("delete from product where id = ? ");
-            ps.setInt(1,product.getId());
+            ps.setInt(1, product.getId());
             return ps.executeUpdate() > 0;
         } catch (SQLException ex) {
             return false;
         }
-        
+
+    }
+
+    public int getMaxRowAOrderTable() {
+        int row = 0;
+
+        try {
+            st = con.createStatement();
+            rs = st.executeQuery("select max(cid) from cart");
+
+            while (rs.next()) {
+                row = rs.getInt(1);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return row + 1;
+    }
+
+    public boolean isProductExist(int cid, int pid) {
+        try {
+            ps = con.prepareStatement("select * from cart where cid = ? and pid = ?");
+            ps.setInt(1, cid);
+            ps.setInt(2, pid);
+            rs = ps.executeQuery();
+            if (rs.next()) {
+                return true;
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return false;
+    }
+
+    public boolean insertCart(Cart cart) {
+        String sql = "insert into cart (cid,pid,pName,qty,price,total) values (?,?,?,?,?,?)";
+        try {
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, cart.getId());
+            ps.setInt(2, cart.getPid());
+            ps.setString(3, cart.getpName());
+            ps.setInt(4, cart.getQty());
+            ps.setDouble(5, cart.getPrice());
+            ps.setDouble(6, cart.getTotal());
+            return ps.executeUpdate() > 0;
+        } catch (Exception ex) {
+            return false;
+        }
     }
 }
+
