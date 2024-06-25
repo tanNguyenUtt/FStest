@@ -150,7 +150,6 @@ public class Dao {
             }
         }
     }
-
     public boolean update(Product product) {
         String sql = "UPDATE product SET name = ?, price = ? WHERE id = ?";
         PreparedStatement ps = null;
@@ -179,6 +178,7 @@ public class Dao {
             }
         }
     }
+
 
     public boolean delete(Product product) {
         try {
@@ -238,5 +238,128 @@ public class Dao {
             return false;
         }
     }
-}
 
+    public int getMaxRowAPaymentTable() {
+        int row = 0;
+
+        try {
+            st = con.createStatement();
+            rs = st.executeQuery("select max(pid) from payment");
+
+            while (rs.next()) {
+                row = rs.getInt(1);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return row + 1;
+    }
+
+    public int getMaxRowACartTable() {
+        int row = 0;
+
+        try {
+            st = con.createStatement();
+            rs = st.executeQuery("select max(cid) from cart");
+
+            while (rs.next()) {
+                row = rs.getInt(1);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        return row + 1;
+    }
+
+    public double subTotal() {
+        double subTotal = 0.0;
+        int cid = getMaxRowACartTable();
+
+        try {
+            st = con.createStatement();
+            rs = st.executeQuery("select sum(total) as 'total' from cart where cid = '" + cid + "'");
+
+            if (rs.next()) {
+                subTotal = rs.getDouble(1);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return subTotal;
+    }
+
+//    public void getProductsFromCart(JTable table) {
+//        int cid = getMaxRowACartTable();
+//        String sql = "SELECT * FROM cart where cid = ?";
+//        try {
+//            ps = con.prepareStatement(sql);
+//            ps.setInt(1, cid);
+//            rs = ps.executeQuery();
+//
+//            DefaultTableModel model = (DefaultTableModel) table.getModel();
+//
+//            Object[] row;
+//
+//            while (rs.next()) {
+//                row = new Object[6];
+//                row[0] = rs.getInt(1);
+//                row[1] = rs.getInt(2);
+//                row[2] = rs.getString(3);
+//                row[3] = rs.getInt(4);
+//                row[4] = rs.getDouble(5);
+//                row[5] = rs.getDouble(6);
+//                model.addRow(row);
+//            }
+//
+//        } catch (Exception ex) {
+//            ex.printStackTrace();
+//        }
+//    }
+    public void getProductsFromCart(JTable table) {
+        int cid = getMaxRowACartTable();
+        String sql = "SELECT * FROM cart where cid = ?";
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+
+        try {
+            con = MyConnection.getConnection();
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, cid);
+            rs = ps.executeQuery();
+
+            DefaultTableModel model = (DefaultTableModel) table.getModel();
+            model.setRowCount(0); // Clear existing rows
+
+            while (rs.next()) {
+                Object[] row = new Object[6];
+                row[0] = rs.getInt(1);
+                row[1] = rs.getInt(2);
+                row[2] = rs.getString(3);
+                row[3] = rs.getInt(4);
+                row[4] = rs.getDouble(5);
+                row[5] = rs.getDouble(6);
+                model.addRow(row);
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (ps != null) {
+                    ps.close();
+                }
+                if (con != null) {
+                    MyConnection.closeConnection(con);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
