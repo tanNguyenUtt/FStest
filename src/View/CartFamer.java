@@ -6,11 +6,16 @@ package View;
 
 import Model.Calculate;
 import Model.Dao;
+import Model.Payment;
+import com.mysql.cj.protocol.Message;
 import java.awt.Color;
+import java.text.MessageFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -196,9 +201,19 @@ public class CartFamer extends javax.swing.JFrame {
         jTextField6.setFont(new java.awt.Font("Times New Roman", 0, 12)); // NOI18N
 
         jTextField7.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
+        jTextField7.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextField7KeyReleased(evt);
+            }
+        });
 
         jTextField8.setBackground(new java.awt.Color(204, 204, 204));
         jTextField8.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
+        jTextField8.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                jTextField8KeyReleased(evt);
+            }
+        });
 
         jLabel11.setFont(new java.awt.Font("Segoe UI", 1, 36)); // NOI18N
         jLabel11.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
@@ -288,7 +303,7 @@ public class CartFamer extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jTextField8, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(241, Short.MAX_VALUE))
+                .addContainerGap(229, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -301,7 +316,10 @@ public class CartFamer extends javax.swing.JFrame {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         pack();
@@ -342,6 +360,49 @@ public class CartFamer extends javax.swing.JFrame {
 
     private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
         // TODO add your handling code here:
+            model = (DefaultTableModel) jTable1.getModel();
+            String proName = "";
+            String proId = "";
+            for (int i = 0; i < model.getRowCount(); i++) {
+                proId += model.getValueAt(i, 1).toString() +",";
+                proName += model.getValueAt(i, 2).toString() +",";
+                
+        }
+            int pid = dao.getMaxRowAPaymentTable() + 1;
+            String cName = jTextField3.getText().trim();
+            double t = Double.parseDouble(jTextField6.getText().trim());
+            
+            Payment payment = new Payment();
+            payment.setpId(pid);
+            payment.setcName(cName);
+            payment.setProId(proId);
+            payment.setProName(proName);
+            payment.setTotal(t);
+            payment.setDate(jTextField4.getText().trim());
+            if(check()){
+                if(dao.Payment(payment)){
+                    JOptionPane.showMessageDialog(this, "Payment Succeed");
+                    int cid = Integer.parseInt(model.getValueAt(rowIndex, 0).toString());
+                    dao.deleteCart(cid);
+                    
+                    int x = JOptionPane.showConfirmDialog(this, "Do you want to print the receipt?", "Print", JOptionPane.YES_NO_OPTION, 0);
+                    if(x == JOptionPane.YES_OPTION){ 
+                        try {
+                        MessageFormat header = new MessageFormat("***Hoa; Flower***"+ "Customer Name:" + cName + " " + "Total($): " + t);
+                        MessageFormat footer = new MessageFormat("Page{0,number,integer}");
+                        jTable1.print(JTable.PrintMode.FIT_WIDTH,header,footer);
+                            setVisible(false);
+                        } catch (Exception ex) {
+                            JOptionPane.showMessageDialog(null, ex.getMessage());
+                        }
+                    }else{
+                        setVisible(false);
+                    }   
+                }else{
+                     JOptionPane.showMessageDialog(this, "Payment Failed..","Warning",2);
+                }
+            }
+            
     }//GEN-LAST:event_jButton3ActionPerformed
 
     private void jTextField3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField3ActionPerformed
@@ -353,6 +414,42 @@ public class CartFamer extends javax.swing.JFrame {
         setVisible(false);
     }//GEN-LAST:event_jLabel4MouseClicked
 
+    private void jTextField8KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField8KeyReleased
+     
+    }//GEN-LAST:event_jTextField8KeyReleased
+
+    private void jTextField7KeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextField7KeyReleased
+        // TODO add your handling code here:
+         cash();
+    }//GEN-LAST:event_jTextField7KeyReleased
+    public void cash(){
+        try {
+            
+            double cash = Double.parseDouble(jTextField7.getText().trim());
+            double total = Double.parseDouble(jTextField6.getText().trim());
+            double change = (cash - total);
+            jTextField8.setText(String.valueOf(change)); 
+            
+        } catch (Exception e) {
+              JOptionPane.showMessageDialog(this, "Not enough cash entered", "Warning",2);
+        }
+    }
+    
+    public boolean check(){
+        if(jTextField3.getText().isEmpty()){
+            JOptionPane.showMessageDialog(this, "Customer name is required", "Warning",2);
+            return false;
+        }if(jTextField7.getText().isEmpty()){
+            JOptionPane.showMessageDialog(this, "Cash is required", "Warning",2);
+            return false;
+        }
+        double chage = Double.parseDouble(jTextField8.getText().trim());
+        if(chage < 0.0){
+            JOptionPane.showMessageDialog(this, "Not enough cash entered", "Warning",2);
+            return false;
+        }
+        return true;
+    }
     /**
      * @param args the command line arguments
      */

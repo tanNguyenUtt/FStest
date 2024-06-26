@@ -270,7 +270,7 @@ public class Dao {
             Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return row + 1;
+        return row ;
     }
 
     public double subTotal() {
@@ -279,7 +279,7 @@ public class Dao {
 
         try {
             st = con.createStatement();
-            rs = st.executeQuery("select sum(total) as 'total' from cart where cid = '" + cid + "'");
+            rs = st.executeQuery("select sum(total) as total from cart where cid = '"+cid+"'" );
 
             if (rs.next()) {
                 subTotal = rs.getDouble(1);
@@ -361,5 +361,32 @@ public class Dao {
                 e.printStackTrace();
             }
         }
+    }
+    
+        public boolean Payment(Payment payment) {
+        String sql = "insert into payment (pid,cName,proid,pName,total,pdate) values (?,?,?,?,?,?)";
+        try {
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, payment.getpId());
+            ps.setString(2, payment.getcName());
+            ps.setString(3, payment.getProId());
+            ps.setString(4, payment.getProName());
+            ps.setDouble(5, payment.getTotal());
+            ps.setString(6, payment.getDate());
+            return ps.executeUpdate() > 0;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+    
+    public boolean deleteCart(int cid) {
+        try {
+            ps = con.prepareStatement("delete from cart where cid = ? ");
+            ps.setInt(1, cid);
+            return ps.executeUpdate() > 0;
+        } catch (SQLException ex) {
+            return false;
+        }
+
     }
 }
