@@ -29,21 +29,21 @@ public class Calculate {
     }
     
     private double calTax(double t){
-        if(t >= 10.0 && t <= 20.0){
+        if(t >= 100000.0 && t <= 200000.0){
             tax = 0.5;
-        }else if(t > 20.0 && t <= 40.0){
+        }else if(t > 200000.0 && t <= 400000.0){
             tax = 1.0;
-        }else if(t > 40.0 && t <= 60.0){
+        }else if(t > 400000.0 && t <= 600000.0){
             tax = 2.0;
-        }else if(t > 60.0 && t <= 80.0){
+        }else if(t > 600000.0 && t <= 800000.0){
             tax = 3.0;
-        }else if(t > 80.0 && t <= 100.0){
+        }else if(t > 800000.0 && t <= 1000000.0){
             tax = 4.0;
-        }else if(t > 100.0 && t <= 150.0){
+        }else if(t > 1000000.0 && t <= 1500000.0){
             tax = 8.0;
-        }else if(t > 150.0 && t <= 200.0){
-            tax = 10.0;
-        }else if(t > 200.0 ){
+        }else if(t > 1500000.0 && t <= 2000000.0){
+            tax = 10000.0;
+        }else if(t > 2000000.0 ){
             tax = 15.0;
         }
         return tax;

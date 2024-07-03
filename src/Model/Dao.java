@@ -150,6 +150,7 @@ public class Dao {
             }
         }
     }
+
     public boolean update(Product product) {
         String sql = "UPDATE product SET name = ?, price = ? WHERE id = ?";
         PreparedStatement ps = null;
@@ -178,7 +179,6 @@ public class Dao {
             }
         }
     }
-
 
     public boolean delete(Product product) {
         try {
@@ -270,7 +270,7 @@ public class Dao {
             Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        return row ;
+        return row;
     }
 
     public double subTotal() {
@@ -279,7 +279,7 @@ public class Dao {
 
         try {
             st = con.createStatement();
-            rs = st.executeQuery("select sum(total) as total from cart where cid = '"+cid+"'" );
+            rs = st.executeQuery("select sum(total) as total from cart where cid = '" + cid + "'");
 
             if (rs.next()) {
                 subTotal = rs.getDouble(1);
@@ -362,8 +362,8 @@ public class Dao {
             }
         }
     }
-    
-        public boolean Payment(Payment payment) {
+
+    public boolean Payment(Payment payment) {
         String sql = "insert into payment (pid,cName,proid,pName,total,pdate) values (?,?,?,?,?,?)";
         try {
             ps = con.prepareStatement(sql);
@@ -378,7 +378,7 @@ public class Dao {
             return false;
         }
     }
-    
+
     public boolean deleteCart(int cid) {
         try {
             ps = con.prepareStatement("delete from cart where cid = ? ");
@@ -388,5 +388,93 @@ public class Dao {
             return false;
         }
 
+    }
+
+    public ArrayList<Payment> getPaymentDetails() {
+        ArrayList<Payment> PaymentList = new ArrayList<>();
+        PreparedStatement ps = null;
+        Connection con = null;
+
+        try {
+            // Kết nối cơ sở dữ liệu
+            con = MyConnection.getConnection();
+            ps = con.prepareStatement("SELECT * FROM payment");
+            rs = ps.executeQuery();
+
+            while (rs.next()) {
+                Payment p = new Payment();
+                p.setpId(rs.getInt("pid"));
+                p.setcName(rs.getString("cName"));
+                p.setProId(rs.getString("proid"));
+                p.setProName(rs.getString("pName"));
+                p.setTotal(rs.getDouble("total"));
+
+                PaymentList.add(p);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            // Đảm bảo đóng các tài nguyên đúng cách
+            try {
+                if (rs != null) {
+                    rs.close();
+                }
+                if (ps != null) {
+                    ps.close();
+                }
+                if (con != null) {
+                    MyConnection.closeConnection(con);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return PaymentList;
+    }
+
+    public int totalProduct() {
+        int total = 0;
+        try {
+            st = con.createStatement();
+            rs = st.executeQuery("SELECT COUNT(*) AS 'total' FROM product");
+
+            if (rs.next()) {
+                total = rs.getInt(1);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return total;
+    }
+
+    public double todayRevenue(String date) {
+        double total = 0.0;
+        try {
+            st = con.createStatement();
+            rs = st.executeQuery("SELECT SUM(total) AS 'total' FROM payment where pdate '" + date + "'");
+
+            if (rs.next()) {
+                total = rs.getDouble(1);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return total;
+    }
+
+    public double todayRevenue() {
+        double total = 0.0;
+        try {
+            st = con.createStatement();
+            rs = st.executeQuery("SELECT SUM(total) AS 'total' FROM payment ");
+
+            if (rs.next()) {
+                total = rs.getDouble(1);
+            }
+        } catch (Exception ex) {
+            Logger.getLogger(Dao.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return total;
     }
 }
